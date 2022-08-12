@@ -22,7 +22,8 @@
 #
 ####################
 
-import os, sys, logging, argparse, getpass, time, re, datetime
+import os, sys, logging, argparse, getpass, time, re, datetime, base64, socket
+from dns import resolver
 from zipfile import ZipFile
 from bloodhound.ad.domain import AD, ADDC
 from bloodhound.ad.authentication import ADAuthentication
@@ -249,14 +250,39 @@ def main():
     parser.add_argument('--cachefile',
                         action='store',
                         help='Cache file (experimental)')
-
-
+    parser.add_argument('-s',
+                        '--silent',
+                        action='store_true',
+                        help='Use enviroment variables & user context to run no other flags required')
+    parser.add_argument('-n',
+                        '--no-trace',
+                        action='store_true',
+                        help='Assumes --zip, convert file to base64 and write to stdout leaving no trace on the host machine')    
+    parser.add_argument('-m',
+                        '--manual',
+                        action='store_true',
+                        help='Print help and exit')
+    
     args = parser.parse_args()
 
     if args.v is True:
         logger.setLevel(logging.DEBUG)
+    #Assumption of no trace is zipping the file 
+    if args.no_trace is True and args.zip is None:
+        args.zip = True
 
-    if args.kerberos is True:
+    if args.silent is True:
+        logging.debug('Authentication: User Context')
+        if os.getenv('logonserver'):
+            ns = resolver.Resolver()
+            args.nameserver = ns.nameservers[-1]
+            args.domain_controller = socket.getfqdn(os.getenv('logonserver').replace("\\\\",""))
+            args.domain = ".".join(args.domain_controller.split(".")[1::])
+            auth = ADAuthentication(domain=args.domain,context=True,hostname=args.domain_controller)
+        else:
+            logging.error('User Context Execution failed no $env:logonserver available')
+            sys.exit(1)
+    elif args.kerberos is True:
         logging.debug('Authentication: kerberos')
         kerberize()
         auth = ADAuthentication()
@@ -315,11 +341,12 @@ def main():
                    cachefile=args.cachefile)
     #If args --zip is true, the compress output  
     if args.zip:
-        logging.info("Compressing output into " + timestamp + "bloodhound.zip")
+        zip_name =  timestamp + "bloodhound.zip"
+        logging.info("Compressing output into " + zip_name)
         # Get a list of files in the current dir
         list_of_files = os.listdir(os.getcwd())
         # Create handle to zip file with timestamp prefix
-        with ZipFile(timestamp + "bloodhound.zip",'w') as zip:
+        with ZipFile(zip_name,'w') as zip:
             # For each of those files we fetched
             for each_file in list_of_files:
                 # If the files starts with the current timestamp and ends in json
@@ -328,6 +355,13 @@ def main():
                     zip.write(each_file)
                     # Remove it from disk
                     os.remove(each_file)
+                #If args --no-trace is true print the results in B64 and delete the file
+        if args.no_trace is True:
+            with open(zip_name, "rb") as file:
+                enc_zip = base64.base64_encode(file.read())
+            os.remove(zip_name)
+            print(enc_zip.decode())
+
 
 
 if __name__ == '__main__':
