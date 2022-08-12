@@ -614,7 +614,7 @@ class AD(object):
                 if gc not in self._gcs:
                     self._gcs.append(gc)
 
-        except resolver.NXDOMAIN:
+        except (resolver.NXDOMAIN, resolver.LifetimeTimeout):
             # Only show warning if we don't already have a GC specified manually
             if options and not options.global_catalog:
                 if not options.disable_autogc:
