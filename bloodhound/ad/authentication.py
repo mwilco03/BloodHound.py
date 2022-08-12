@@ -31,7 +31,7 @@ Active Directory authentication helper
 """
 class ADAuthentication(object):
     def __init__(self, username='', password='', domain='',
-                 lm_hash='', nt_hash='', aes_key='', kdc=None):
+                 lm_hash='', nt_hash='', aes_key='', kdc=None, context=None, hostname=''):
         self.username = username
         self.domain = domain
         if '@' in self.username:
@@ -41,9 +41,21 @@ class ADAuthentication(object):
         self.nt_hash = nt_hash
         self.aes_key = aes_key
         self.kdc = kdc
-
+        self.context = context
+        self.hostname = hostname
 
     def getLDAPConnection(self, hostname='', baseDN='', protocol='ldaps', gc=False):
+        if self.context is not None:            
+            server = Server(self.hostname, use_ssl=True, get_info=ALL)
+            conn = Connection(server, authentication=SASL, sasl_mechanism=GSSAPI, auto_range=True, receive_timeout=60)
+            logging.debug('Authenticating to LDAP server user context')
+            if not conn.bind():
+                result = conn.result
+                logging.error('Failure to authenticate with LDAP! Error %s' % result['message'])
+                return None
+            else:
+                return conn
+                
         if gc:
             # Global Catalog connection
             if protocol == 'ldaps':
