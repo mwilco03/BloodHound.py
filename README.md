@@ -6,6 +6,7 @@
 - -s use user context to connect to ad 
 - -m help file was hard this was easy
 - -n remove all files and print the zip file as B64 to STDOUT
+
 BloodHound.py is a Python based ingestor for [BloodHound](https://github.com/BloodHoundAD/BloodHound), based on [Impacket](https://github.com/CoreSecurity/impacket/).
 
 This version of BloodHound.py is **only compatible with BloodHound 4.2 or newer**. For the 3.x range, use version 1.1.1 via pypi. As of version 1.3, BloodHound.py only supports Python 3, Python 2 is no longer tested and may break in the future.
