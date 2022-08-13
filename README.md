@@ -2,7 +2,10 @@
 ![Python 3 compatible](https://img.shields.io/badge/python-3.x-blue.svg)
 ![PyPI version](https://img.shields.io/pypi/v/bloodhound.svg)
 ![License: MIT](https://img.shields.io/pypi/l/bloodhound.svg)
-
+## This fork implments a few new features.
+- -s use user context to connect to ad 
+- -m help file was hard this was easy
+- -n remove all files and print the zip file as B64 to STDOUT
 BloodHound.py is a Python based ingestor for [BloodHound](https://github.com/BloodHoundAD/BloodHound), based on [Impacket](https://github.com/CoreSecurity/impacket/).
 
 This version of BloodHound.py is **only compatible with BloodHound 4.2 or newer**. For the 3.x range, use version 1.1.1 via pypi. As of version 1.3, BloodHound.py only supports Python 3, Python 2 is no longer tested and may break in the future.
@@ -41,11 +44,3 @@ If you want to restrict collection, specify the `--collectionmethod` parameter, 
 Multiple collectionmethods should be separated by a comma, for example: `-c Group,LocalAdmin`
 
 You can override some of the automatic detection options, such as the hostname of the primary Domain Controller if you want to use a different Domain Controller with `-dc`, or specify your own Global Catalog with `-gc`.
-
-## Docker usage
-1. Build container  
-```docker build -t bloodhound .```  
-2. Run container  
-```docker run -v ${PWD}:/bloodhound-data -it bloodhound```  
-After that you can run `bloodhound-python` inside the container, all data will be stored in the path from where you start the container.
-
