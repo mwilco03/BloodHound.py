@@ -23,7 +23,7 @@
 ####################
 
 import logging
-from ldap3 import Server, Connection, NTLM, ALL
+from ldap3 import Server, Connection, NTLM, ALL, SASL, GSSAPI
 from ldap3.core.results import RESULT_STRONGER_AUTH_REQUIRED
 
 """
